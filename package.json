@@ -1,0 +1,21 @@
+{
+	"scripts": {
+		"dev": "next dev",
+		"test": "vitest"
+	},
+	"dependencies": {
+		"@react-oauth/google": "^0.12.1",
+		"@types/node": "^22.14.1",
+		"next": "^15.3.1",
+		"openai": "^4.95.1",
+		"pdfjs-dist": "^5.1.91",
+		"react": "^19.1.0",
+		"react-dom": "^19.1.0",
+		"react-markdown": "^10.1.0"
+	},
+	"devDependencies": {
+		"@types/react": "^19.1.2",
+		"typescript": "^5.8.3",
+		"vitest": "^3.1.1"
+	}
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Paper",
+  "type": "object",
+  "properties": {
+    "universal_paper_id": { "type": "string" },
+    "title": { "type": "string" },
+    "abstract": { "type": "string" },
+    "authors": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "categories": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "comments_count": { "type": "integer" }
+      },
+      "required": ["comments_count"]
+    },
+    "publication_date": { "type": "string", "format": "date-time" },
+    "summary": { "type": "string" }
+  },
+  "required": [
+    "universal_paper_id",
+    "title",
+    "abstract",
+    "authors",
+    "categories",
+    "metrics",
+    "publication_date"
+  ]
+}

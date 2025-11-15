@@ -96,46 +96,123 @@ async function getAlphaXivToken(): Promise<ClerkToken | null> {
     console.log('\n👉 ブラウザでGoogleアカウントを使ってログインしてください');
     console.log('   ログイン完了後、自動的にトークンが取得されます...\n');
 
-    // ログイン完了を待機（ホームページまたはダッシュボードにリダイレクトされるまで）
-    await page.waitForFunction(
-      () => {
-        return window.location.pathname !== '/login' &&
-               window.location.pathname !== '/sign-in';
-      },
-      { timeout: 300000 } // 5分待機
-    );
+    // ポップアップウィンドウを監視
+    let popupPage: any = null;
+    browser.on('targetcreated', async (target) => {
+      if (target.type() === 'page') {
+        popupPage = await target.page();
+        console.log('🔗 ポップアップウィンドウを検出しました');
+      }
+    });
 
-    console.log('✅ ログイン成功を検知しました');
+    // ログイン完了を待機（複数の条件をチェック）
+    const waitForLogin = async () => {
+      const startTime = Date.now();
+      const timeout = 300000; // 5分
+
+      while (Date.now() - startTime < timeout) {
+        try {
+          // 方法1: URLの変化をチェック
+          const currentUrl = page.url();
+          if (currentUrl !== LOGIN_URL &&
+              !currentUrl.includes('/login') &&
+              !currentUrl.includes('/sign-in')) {
+            console.log('✅ ログイン成功を検知しました（URLの変化）');
+            return true;
+          }
+
+          // 方法2: Cookieの存在をチェック
+          const cookies = await page.cookies();
+          const hasClerkSession = cookies.some(c =>
+            c.name === '__session' || c.name.includes('clerk')
+          );
+          if (hasClerkSession) {
+            console.log('✅ ログイン成功を検知しました（セッションCookie）');
+            return true;
+          }
+
+          // 1秒待機して再チェック
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (error) {
+          // ページが閉じられた場合などのエラーを無視
+          console.log('⚠️  チェック中にエラー（無視）:', error.message);
+        }
+      }
+
+      throw new Error('ログインタイムアウト');
+    };
+
+    await waitForLogin();
 
     // 少し待機してセッションが確立されるのを待つ
-    await page.waitForTimeout(2000);
+    console.log('⏳ セッション確立を待機中...');
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
     // Cookieからトークンを取得
-    const cookies = await page.cookies();
+    let cookies = await page.cookies();
+
+    // Cookieが少ない場合、もう一度待機して再取得
+    if (cookies.length < 3) {
+      console.log('⏳ Cookieが少ないため、さらに待機中...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      cookies = await page.cookies();
+    }
+
+    console.log(`\n📊 取得したCookie数: ${cookies.length}`);
 
     // Clerk関連のCookieを探す
     const clerkCookies = cookies.filter(cookie =>
       cookie.name.includes('clerk') ||
-      cookie.name === '__session'
+      cookie.name === '__session' ||
+      cookie.name.includes('session')
     );
 
-    console.log('\n🔍 検出されたClerk関連Cookie:');
-    clerkCookies.forEach(cookie => {
-      console.log(`  - ${cookie.name}: ${cookie.value.substring(0, 50)}...`);
-    });
+    console.log('\n🔍 検出されたClerk/セッション関連Cookie:');
+    if (clerkCookies.length > 0) {
+      clerkCookies.forEach(cookie => {
+        const preview = cookie.value.length > 50
+          ? `${cookie.value.substring(0, 50)}...`
+          : cookie.value;
+        console.log(`  - ${cookie.name}: ${preview}`);
+      });
+    } else {
+      console.log('  ⚠️  Clerk関連のCookieが見つかりません');
+    }
 
-    // __session Cookieを優先的に使用
-    let sessionToken = clerkCookies.find(c => c.name === '__session')?.value;
+    // トークンを探す優先順位
+    const tokenPriority = [
+      '__session',
+      '__clerk_db_jwt',
+      'clerk_session',
+      '__clerk_session',
+    ];
 
-    // __sessionがない場合は、__clerk_db_jwtを試す
-    if (!sessionToken) {
-      sessionToken = clerkCookies.find(c => c.name.includes('clerk_db_jwt'))?.value;
+    let sessionToken: string | undefined;
+    for (const cookieName of tokenPriority) {
+      const cookie = cookies.find(c => c.name === cookieName);
+      if (cookie) {
+        sessionToken = cookie.value;
+        console.log(`\n✅ トークンを発見: ${cookieName}`);
+        break;
+      }
+    }
+
+    // 優先順位リストになかった場合、Clerk関連のCookieから探す
+    if (!sessionToken && clerkCookies.length > 0) {
+      sessionToken = clerkCookies[0].value;
+      console.log(`\n✅ トークンを発見: ${clerkCookies[0].name}`);
     }
 
     if (!sessionToken) {
-      console.error('❌ トークンが見つかりませんでした');
-      console.log('\n利用可能なCookie:');
-      cookies.forEach(cookie => console.log(`  ${cookie.name}`));
+      console.error('\n❌ トークンが見つかりませんでした');
+      console.log('\n📋 利用可能なすべてのCookie:');
+      cookies.forEach(cookie => {
+        console.log(`  - ${cookie.name} (${cookie.domain})`);
+      });
+      console.log('\n💡 ヒント:');
+      console.log('  1. ログインが完了したか確認してください');
+      console.log('  2. alphaXivのホームページにリダイレクトされたか確認してください');
+      console.log('  3. もう一度 pnpm run get-token を実行してみてください');
       return null;
     }
 

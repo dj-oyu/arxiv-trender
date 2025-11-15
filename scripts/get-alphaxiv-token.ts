@@ -94,6 +94,7 @@ async function getAlphaXivToken(): Promise<ClerkToken | null> {
     await page.goto(LOGIN_URL, { waitUntil: 'networkidle2' });
 
     console.log('\n👉 ブラウザでGoogleアカウントを使ってログインしてください');
+    console.log('   ⏰ タイムアウトは5分です - ゆっくりログインできます');
     console.log('   ログイン完了後、自動的にトークンが取得されます...\n');
 
     // ポップアップウィンドウを監視
@@ -109,37 +110,65 @@ async function getAlphaXivToken(): Promise<ClerkToken | null> {
     const waitForLogin = async () => {
       const startTime = Date.now();
       const timeout = 300000; // 5分
+      let lastLoggedUrl = '';
+
+      console.log('⏳ ログイン完了を待機しています...');
+      console.log('   （Googleログイン画面が表示されたら、ゆっくりログインしてください）\n');
 
       while (Date.now() - startTime < timeout) {
         try {
-          // 方法1: URLの変化をチェック
           const currentUrl = page.url();
-          if (currentUrl !== LOGIN_URL &&
-              !currentUrl.includes('/login') &&
-              !currentUrl.includes('/sign-in')) {
-            console.log('✅ ログイン成功を検知しました（URLの変化）');
-            return true;
+
+          // URLが変わったらログ出力（デバッグ用）
+          if (currentUrl !== lastLoggedUrl) {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            console.log(`   [${elapsed}s] 現在のURL: ${currentUrl.substring(0, 60)}...`);
+            lastLoggedUrl = currentUrl;
           }
 
-          // 方法2: Cookieの存在をチェック
-          const cookies = await page.cookies();
-          const hasClerkSession = cookies.some(c =>
-            c.name === '__session' || c.name.includes('clerk')
-          );
-          if (hasClerkSession) {
-            console.log('✅ ログイン成功を検知しました（セッションCookie）');
-            return true;
+          // Googleのログインページにいる場合は待機を継続
+          if (currentUrl.includes('accounts.google.com') ||
+              currentUrl.includes('google.com/')) {
+            // Googleログイン中
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            continue;
+          }
+
+          // alphaXivのログイン・サインインページにいる場合は待機を継続
+          if (currentUrl.includes('/login') || currentUrl.includes('/sign-in')) {
+            // まだログインページにいる
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            continue;
+          }
+
+          // alphaXivドメインで、ログイン/サインインページでない場合
+          if (currentUrl.includes('alphaxiv.org') &&
+              !currentUrl.includes('/login') &&
+              !currentUrl.includes('/sign-in')) {
+
+            // Cookieを確認
+            const cookies = await page.cookies();
+            const hasClerkSession = cookies.some(c =>
+              c.name === '__session' || c.name.includes('clerk')
+            );
+
+            if (hasClerkSession) {
+              console.log('\n✅ ログイン成功を検知しました！');
+              console.log(`   最終URL: ${currentUrl}`);
+              return true;
+            }
           }
 
           // 1秒待機して再チェック
           await new Promise(resolve => setTimeout(resolve, 1000));
         } catch (error) {
           // ページが閉じられた場合などのエラーを無視
-          console.log('⚠️  チェック中にエラー（無視）:', error.message);
+          console.log(`⚠️  チェック中にエラー（無視）: ${error.message}`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
 
-      throw new Error('ログインタイムアウト');
+      throw new Error('ログインタイムアウト（5分経過）');
     };
 
     await waitForLogin();

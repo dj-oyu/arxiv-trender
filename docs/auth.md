@@ -33,8 +33,22 @@ Google Cloud ConsoleのOAuthリダイレクトURIにも上記を登録するこ�
 
 - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`（未使用）
   Google Cloud Consoleで取得できますが、v3 APIでは不要です
-- `ALPHAXIV_API_TOKEN`（不要）
-  v3 APIは認証不要のため、設定する必要はありません
+- `ALPHAXIV_API_TOKEN`（任意）
+  v3 APIは基本的に認証不要ですが、トークンがあると制限解除される場合があります
+
+### トークンの自動取得
+
+プログラムでalphaXivトークンを自動取得できます：
+
+```bash
+# トークンを取得
+pnpm run get-token
+
+# トークンを確認
+pnpm run check-token
+```
+
+詳細は `scripts/get-alphaxiv-token.ts` を参照してください。
 
 ---
 

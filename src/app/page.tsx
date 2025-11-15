@@ -84,12 +84,12 @@ export default function Home() {
     setAuthLoading(true);
     try {
       const idToken = credentialResponse.credential;
-      const response = await fetch('https://api.alphaxiv.org/v1/auth/login-google', {
+      const response = await fetch('/api/auth', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ idToken: idToken }),
+        body: JSON.stringify({ googleToken: idToken }),
       });
       const result = await response.json();
       if (result.success && result.apiKey) {
@@ -97,9 +97,10 @@ export default function Home() {
         setIsLoggedIn(true);
         alert('認証成功しました。トークンが設定されました。');
       } else {
-        alert('認証に失敗しました。');
+        alert('認証に失敗しました。' + (result.error ? ': ' + result.error : ''));
       }
     } catch (error) {
+      console.error('Authentication error:', error);
       alert('認証に失敗しました。');
     }
     setAuthLoading(false);

@@ -3,10 +3,11 @@
 ## Google認証フロー
 
 1. クライアントでGoogleログインボタンを押下
-2. Google OAuth 2.0で認証
-3. 取得したIDトークンを `/api/auth` にPOST
-4. サーバー側でalphaXivの `/v1/auth/login-google` にリダイレクト
+2. Google OAuth 2.0で認証し、IDトークンを取得
+3. クライアントから `/api/auth` にIDトークンをPOST
+4. サーバー側でalphaXiv APIの `/v1/auth/login-google` を呼び出し
 5. alphaXivからAPIキーを取得し、クライアントに返却
+6. クライアントは取得したAPIキーを状態管理で保持
 
 ---
 
@@ -30,10 +31,16 @@ Google Cloud ConsoleのOAuthリダイレクトURIにも上記を登録するこ�
 
 ---
 
-## alphaXiv API認証エンドポイント
+## APIエンドポイント
 
+### クライアント → サーバー
+- `POST /api/auth`
+  - Body: `{ "googleToken": "<Google IDトークン>" }`
+  - レスポンス: `{ "success": true, "apiKey": "..." }`
+
+### サーバー → alphaXiv API
 - `POST https://api.alphaxiv.org/v1/auth/login-google`
-  - Body: `{ "idToken": "<Google IDトークン>" }`
+  - Body: `{ "token": "<Google IDトークン>" }`
   - レスポンス: `{ "success": true, "apiKey": "..." }`
 
 ---
@@ -42,6 +49,8 @@ Google Cloud ConsoleのOAuthリダイレクトURIにも上記を登録するこ�
 
 - alphaXiv APIはトークンなしでも動作しますが、制限がかかる場合があります
 - Google認証でログインすることで、APIキーを取得して使用することを推奨します
+- クライアントから直接alphaXiv APIを呼び出さず、必ず `/api/auth` を経由します
+  - これによりCORS問題を回避し、エラーハンドリングを統一できます
 - Google認証後、APIキーはクライアントの状態管理で保持されます
 - APIキーはリクエストごとに`/api/papers`等で利用されます
 - セキュリティのため、APIキーは.env.localやサーバーサイドで管理することを推奨します

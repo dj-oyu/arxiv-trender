@@ -84,11 +84,48 @@ async function getAlphaXivToken(): Promise<ClerkToken | null> {
   const browser = await puppeteer.launch({
     headless: false, // ブラウザを表示してユーザーがログイン操作できるようにする
     defaultViewport: { width: 1280, height: 800 },
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-blink-features=AutomationControlled', // 自動化検出を無効化
+      '--disable-web-security',
+      '--disable-features=IsolateOrigins,site-per-process',
+      '--allow-running-insecure-content',
+      '--disable-infobars',
+      '--window-size=1280,800',
+    ],
+    ignoreDefaultArgs: ['--enable-automation'], // 自動化フラグを削除
   });
 
   try {
     const page = await browser.newPage();
+
+    // User-Agentを通常のChromeに設定
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    );
+
+    // navigator.webdriverを削除して自動化を隠す
+    await page.evaluateOnNewDocument(() => {
+      Object.defineProperty(navigator, 'webdriver', {
+        get: () => false,
+      });
+
+      // Chrome自動化の痕跡を削除
+      (window as any).navigator.chrome = {
+        runtime: {},
+      };
+
+      // プラグインの設定
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => [1, 2, 3, 4, 5],
+      });
+
+      // 言語設定
+      Object.defineProperty(navigator, 'languages', {
+        get: () => ['en-US', 'en', 'ja'],
+      });
+    });
 
     console.log(`📂 ${LOGIN_URL} にアクセスしています...`);
     await page.goto(LOGIN_URL, { waitUntil: 'networkidle2' });

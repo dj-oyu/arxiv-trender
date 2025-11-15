@@ -3,6 +3,7 @@
 		"dev": "next dev",
 		"test": "vitest",
 		"get-token": "tsx scripts/get-alphaxiv-token.ts",
+		"get-token:manual": "tsx scripts/get-token-manual.ts",
 		"check-token": "tsx scripts/check-token.ts"
 	},
 	"dependencies": {

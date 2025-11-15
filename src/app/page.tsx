@@ -12,15 +12,6 @@ export default function Home() {
   const [authLoading, setAuthLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // クライアントサイドでのみトークンを確認
-  useEffect(() => {
-    const storedToken = process.env.ALPHAXIV_API_TOKEN || ''; // 環境変数から取得
-    if (storedToken) {
-      setToken(storedToken);
-      setIsLoggedIn(true);
-    }
-  }, []);
-
   const handleFetch = async () => {
     setLoading(true);
     try {

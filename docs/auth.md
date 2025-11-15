@@ -23,10 +23,10 @@ Google Cloud ConsoleのOAuthリダイレクトURIにも上記を登録するこ�
 
 ## 必要な環境変数
 
-- `NEXT_PUBLIC_GOOGLE_CLIENT_ID`  
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID`（必須）
   Google Cloud Consoleで取得
-- `ALPHAXIV_API_TOKEN`  
-  alphaXiv公式で取得
+- `ALPHAXIV_API_TOKEN`（任意）
+  alphaXiv APIトークン。事前設定は不要で、Google認証でログインすることで取得できます。
 
 ---
 
@@ -40,6 +40,8 @@ Google Cloud ConsoleのOAuthリダイレクトURIにも上記を登録するこ�
 
 ## 注意事項
 
-- Google認証後、APIキーはクライアントの状態管理で保持
-- APIキーはリクエストごとに`/api/papers`等で利用
-- セキュリティのため、APIキーは.env.localやサーバーサイドで管理推奨
+- alphaXiv APIはトークンなしでも動作しますが、制限がかかる場合があります
+- Google認証でログインすることで、APIキーを取得して使用することを推奨します
+- Google認証後、APIキーはクライアントの状態管理で保持されます
+- APIキーはリクエストごとに`/api/papers`等で利用されます
+- セキュリティのため、APIキーは.env.localやサーバーサイドで管理することを推奨します

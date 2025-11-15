@@ -22,11 +22,12 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googl
 # OpenAI PlatformでAPIキーを取得
 OPENAI_API_KEY=sk-...
 
-# alphaXiv公式サイトでAPIキーを取得
-ALPHAXIV_API_TOKEN=...
-
 # Grok APIを使う場合（任意）
 GROK_API_KEY=...
+
+# alphaXiv APIトークン（任意）
+# ※ Google認証でログインすることでAPIキーを取得できるため、事前設定は不要です
+# ALPHAXIV_API_TOKEN=...
 ```
 
 ### 各値の取得方法
@@ -38,12 +39,15 @@ GROK_API_KEY=...
      - alphaXivのGoogle認証APIがこのリダイレクトURIでトークンを受け取るため、これで問題ありません
   4. 発行されたクライアントIDを`NEXT_PUBLIC_GOOGLE_CLIENT_ID`に設定
 
-- **OpenAI API Key**  
+- **OpenAI API Key**
   [OpenAI Platform](https://platform.openai.com/account/api-keys)でAPIキーを発行し、`OPENAI_API_KEY`に設定。
 
-
-- **Grok API Key**  
+- **Grok API Key**
   Grok APIを利用する場合は、公式サイトでAPIキーを取得し、`GROK_API_KEY`に設定。
+
+- **alphaXiv API Token（任意）**
+  alphaXivのAPIキーは、アプリ内でGoogle認証を使用して取得できます。
+  事前に設定する必要はありませんが、既に取得済みのトークンがある場合は`ALPHAXIV_API_TOKEN`に設定できます。
 
 ---
 
@@ -75,7 +79,7 @@ GROK_API_KEY=...
 
 - `node_modules/`, `.env*`, `.next/` などは`.gitignore`済み
 - テストはVitestで自動化
-- Google認証・APIキー取得が必須
+- alphaXiv APIはトークンなしでも動作しますが、Google認証でログインすることを推奨
 - エラー時のstderr出力は異常系テストの想定通り
 
 ---

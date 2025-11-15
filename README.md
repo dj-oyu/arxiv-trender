@@ -4,9 +4,8 @@
 
 ## 概要
 
-- alphaXivから論文トレンドを取得
+- alphaXiv v3 APIから論文トレンドを取得（認証不要）
 - 論文本文のAI要約（Grok API対応、OpenAI API自動切り替えは未実装）
-- Google認証によるAPIキー取得
 - メタデータ・要約・PDFリンクを集約表示
 
 ---
@@ -25,19 +24,16 @@ OPENAI_API_KEY=sk-...
 # Grok APIを使う場合（任意）
 GROK_API_KEY=...
 
-# alphaXiv APIトークン（任意）
-# ※ Google認証でログインすることでAPIキーを取得できるため、事前設定は不要です
+# alphaXiv APIトークン（不要）
+# ※ v3 APIは認証不要のため、設定する必要はありません
 # ALPHAXIV_API_TOKEN=...
 ```
 
 ### 各値の取得方法
 
-- **Google Client ID**  
-  1. [Google Cloud Console](https://console.cloud.google.com/apis/credentials)で新規OAuth 2.0クライアントIDを作成
-  2. 「承認済みのJavaScript生成元」に `http://localhost:3000` を追加
-  3. 「承認済みのリダイレクトURI」に `https://api.alphaxiv.org/v1/auth/login-google` を追加
-     - alphaXivのGoogle認証APIがこのリダイレクトURIでトークンを受け取るため、これで問題ありません
-  4. 発行されたクライアントIDを`NEXT_PUBLIC_GOOGLE_CLIENT_ID`に設定
+- **Google Client ID（現在未使用）**
+  Google認証機能は実装されていますが、alphaXiv v3 APIが認証不要のため、現在は使用されていません。
+  将来的に認証機能を追加する場合は、[Google Cloud Console](https://console.cloud.google.com/apis/credentials)で設定してください。
 
 - **OpenAI API Key**
   [OpenAI Platform](https://platform.openai.com/account/api-keys)でAPIキーを発行し、`OPENAI_API_KEY`に設定。
@@ -45,9 +41,8 @@ GROK_API_KEY=...
 - **Grok API Key**
   Grok APIを利用する場合は、公式サイトでAPIキーを取得し、`GROK_API_KEY`に設定。
 
-- **alphaXiv API Token（任意）**
-  alphaXivのAPIキーは、アプリ内でGoogle認証を使用して取得できます。
-  事前に設定する必要はありませんが、既に取得済みのトークンがある場合は`ALPHAXIV_API_TOKEN`に設定できます。
+- **alphaXiv API Token（不要）**
+  alphaXiv v3 APIは認証が不要なため、設定する必要はありません。
 
 ---
 
@@ -79,7 +74,7 @@ GROK_API_KEY=...
 
 - `node_modules/`, `.env*`, `.next/` などは`.gitignore`済み
 - テストはVitestで自動化
-- alphaXiv APIはトークンなしでも動作しますが、Google認証でログインすることを推奨
+- alphaXiv v3 APIは認証不要で動作します
 - エラー時のstderr出力は異常系テストの想定通り
 
 ---

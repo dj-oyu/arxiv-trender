@@ -7,34 +7,41 @@ describe('alphaXiv API Client', () => {
   });
 
   describe('fetchTrendingPapers', () => {
-    it('should make request without Authorization header when token is not provided', async () => {
+    it('should make request to v3 API without authentication', async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ data: { trending_papers: [{ id: '1', title: 'Test' }] } }),
+        json: async () => ({ papers: [{ id: '1', title: 'Test' }] }),
       });
 
       await fetchTrendingPapers('agents');
 
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('api.alphaxiv.org'),
+        expect.stringContaining('papers/v3/feed'),
         expect.objectContaining({
-          headers: {},
+          headers: expect.objectContaining({
+            'accept': '*/*',
+            'sec-fetch-mode': 'cors',
+          }),
         })
       );
     });
 
-    it('should include Authorization header when token is provided', async () => {
+    it('should work even when token parameter is provided (backwards compatibility)', async () => {
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ data: { trending_papers: [{ id: '1', title: 'Test' }] } }),
+        json: async () => ({ papers: [{ id: '1', title: 'Test' }] }),
       });
 
       await fetchTrendingPapers('agents', 'test-api-token');
 
+      // v3 API doesn't use the token, but should still work
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('api.alphaxiv.org'),
+        expect.stringContaining('papers/v3/feed'),
         expect.objectContaining({
-          headers: { Authorization: 'Bearer test-api-token' },
+          headers: expect.objectContaining({
+            'accept': '*/*',
+            'sec-fetch-mode': 'cors',
+          }),
         })
       );
     });
@@ -51,16 +58,18 @@ describe('alphaXiv API Client', () => {
       expect(result.error).toBeDefined();
     });
 
-    it('should parse various response formats', async () => {
-      // data.data.trending_papers形式
+    it('should parse v3 API response format', async () => {
+      // v3 API format: { papers: [...] }
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ data: { trending_papers: [{ id: '1' }] } }),
+        json: async () => ({ papers: [{ id: '1', title: 'Test Paper' }] }),
       });
 
-      const result1 = await fetchTrendingPapers('agents');
-      expect(result1.success).toBe(true);
-      expect(Array.isArray(result1.data)).toBe(true);
+      const result = await fetchTrendingPapers('agents');
+      expect(result.success).toBe(true);
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data.length).toBe(1);
+      expect(result.data[0].id).toBe('1');
     });
   });
 

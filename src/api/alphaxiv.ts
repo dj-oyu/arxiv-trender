@@ -1,30 +1,26 @@
 export const fetchTrendingPapers = async (category: string, token?: string): Promise<{ success: boolean; data: any[]; error?: string }> => {
-  const url = `https://api.alphaxiv.org/v2/papers/trending-papers?page_num=0&sort_by=Hot&page_size=10&custom_categories=${category}`;
-  const apiToken = token || process.env.ALPHAXIV_API_TOKEN || '';
+  // v3 API: トークン不要、topics配列形式でカテゴリを指定
+  const topics = encodeURIComponent(JSON.stringify([category]));
+  const url = `https://api.alphaxiv.org/papers/v3/feed?pageNum=0&sort=Hot&pageSize=10&interval=All+time&topics=${topics}`;
+
   try {
-    const headers: { Authorization?: string } = {};
-    if (apiToken) {
-      headers.Authorization = `Bearer ${apiToken}`;
-    }
     const response = await fetch(url, {
-      headers,
+      headers: {
+        'accept': '*/*',
+        'sec-fetch-mode': 'cors',
+      },
     });
+
     if (!response.ok) {
       throw new Error('API request failed with status ' + response.status);
     }
+
     const data = await response.json();
     console.log('Raw API Response:', JSON.stringify(data, null, 2).substring(0, 500) + '...'); // デバッグ用
-    // レスポンスの構造を確認し、配列形式に変換
-    if (Array.isArray(data)) {
-      return { success: true, data };
-    } else if (data && typeof data === 'object' && Array.isArray(data.papers)) {
+
+    // v3 APIのレスポンス構造: { papers: [...] }
+    if (data && typeof data === 'object' && Array.isArray(data.papers)) {
       return { success: true, data: data.papers };
-    } else if (data && typeof data === 'object' && data.data && Array.isArray(data.data)) {
-      return { success: true, data: data.data };
-    } else if (data && typeof data === 'object' && data.data && data.data.data && data.data.data.trending_papers && Array.isArray(data.data.data.trending_papers)) {
-      return { success: true, data: data.data.data.trending_papers };
-    } else if (data && typeof data === 'object' && data.data && data.data.trending_papers && Array.isArray(data.data.trending_papers)) {
-      return { success: true, data: data.data.trending_papers };
     } else {
       throw new Error('Unexpected data format from API');
     }

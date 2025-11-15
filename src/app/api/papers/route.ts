@@ -4,7 +4,7 @@ export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const category = url.searchParams.get('category') || 'agents';
-    const token = url.searchParams.get('token') || process.env.ALPHAXIV_API_TOKEN || '';
+    const token = url.searchParams.get('token') || '';
 
     console.log('Fetching papers with category:', category); // デバッグ用
     const data = await fetchTrendingPapers(category, token);

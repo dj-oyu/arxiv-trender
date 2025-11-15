@@ -23,10 +23,10 @@ Google Cloud ConsoleのOAuthリダイレクトURIにも上記を登録するこ�
 
 ## 必要な環境変数
 
-- `NEXT_PUBLIC_GOOGLE_CLIENT_ID`  
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
   Google Cloud Consoleで取得
-- `ALPHAXIV_API_TOKEN`  
-  alphaXiv公式で取得
+
+注: alphaXiv APIトークンは不要です。Google認証により動的にAPIキーを取得します。
 
 ---
 

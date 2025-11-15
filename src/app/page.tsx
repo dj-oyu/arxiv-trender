@@ -12,14 +12,8 @@ export default function Home() {
   const [authLoading, setAuthLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // クライアントサイドでのみトークンを確認
-  useEffect(() => {
-    const storedToken = process.env.ALPHAXIV_API_TOKEN || ''; // 環境変数から取得
-    if (storedToken) {
-      setToken(storedToken);
-      setIsLoggedIn(true);
-    }
-  }, []);
+  // トークンは不要になったため、useEffectは削除
+  // Google認証によりトークンを取得する場合のみ使用
 
   const handleFetch = async () => {
     setLoading(true);

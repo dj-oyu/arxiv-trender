@@ -22,9 +22,6 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googl
 # OpenAI PlatformでAPIキーを取得
 OPENAI_API_KEY=sk-...
 
-# alphaXiv公式サイトでAPIキーを取得
-ALPHAXIV_API_TOKEN=...
-
 # Grok APIを使う場合（任意）
 GROK_API_KEY=...
 ```

@@ -1,6 +1,6 @@
 export const fetchTrendingPapers = async (category: string, token?: string): Promise<{ success: boolean; data: any[]; error?: string }> => {
   const url = `https://api.alphaxiv.org/v2/papers/trending-papers?page_num=0&sort_by=Hot&page_size=10&custom_categories=${category}`;
-  const apiToken = token || process.env.ALPHAXIV_API_TOKEN || '';
+  const apiToken = token || '';
   try {
     const headers: { Authorization?: string } = {};
     if (apiToken) {

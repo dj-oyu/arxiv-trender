@@ -68,4 +68,31 @@ describe('POST /api/auth', () => {
     expect(body.success).toBe(false);
     expect(body.error).toBe('Network Error');
   });
+
+  it('should accept both googleToken and token parameter names', async () => {
+    const mockApiKey = 'test-api-key';
+    (getAuthToken as any).mockResolvedValue({ success: true, apiKey: mockApiKey });
+
+    // googleTokenパラメータでテスト
+    const request1 = new Request('http://localhost/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ googleToken: 'test-google-token' }),
+    });
+    const response1 = await POST(request1);
+    const body1 = await response1.json();
+    expect(response1.status).toBe(200);
+    expect(body1.success).toBe(true);
+
+    // tokenパラメータでもテスト（後方互換性）
+    const request2 = new Request('http://localhost/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: 'test-google-token' }),
+    });
+    const response2 = await POST(request2);
+    const body2 = await response2.json();
+    expect(response2.status).toBe(200);
+    expect(body2.success).toBe(true);
+  });
 });

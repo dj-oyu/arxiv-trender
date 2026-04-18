@@ -1,7 +1,10 @@
 {
 	"scripts": {
 		"dev": "next dev",
-		"test": "vitest"
+		"test": "vitest",
+		"get-token": "tsx scripts/get-alphaxiv-token.ts",
+		"get-token:manual": "tsx scripts/get-token-manual.ts",
+		"check-token": "tsx scripts/check-token.ts"
 	},
 	"dependencies": {
 		"@react-oauth/google": "^0.12.1",
@@ -15,6 +18,9 @@
 	},
 	"devDependencies": {
 		"@types/react": "^19.1.2",
+		"dotenv": "^17.2.3",
+		"puppeteer": "^24.30.0",
+		"tsx": "^4.20.6",
 		"typescript": "^5.8.3",
 		"vitest": "^3.1.1"
 	}
